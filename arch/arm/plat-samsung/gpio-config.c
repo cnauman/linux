@@ -239,9 +239,9 @@ int s3c_gpio_setpull_1up(struct s3c_gpio_chip *chip,
 
 	pup = __raw_readl(reg);
 
-	if (pup == S3C_GPIO_PULL_UP)
+	if (pull == S3C_GPIO_PULL_UP)
 		pup &= ~(1 << off);
-	else if (pup == S3C_GPIO_PULL_NONE)
+	else if (pull == S3C_GPIO_PULL_NONE)
 		pup |= (1 << off);
 	else
 		return -EINVAL;
