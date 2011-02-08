@@ -240,7 +240,7 @@ static struct s3c24xx_mci_pdata ij3k_mmc_cfg __initdata = {
 };
 
 /* NAND Flash on IJ3K board */
-
+#define KERN_SZE (0x00500000)
 static struct mtd_partition ij3k_default_nand_part[] __initdata = {
 	[0] = {
 		.name	= "u-boot",
@@ -256,12 +256,12 @@ static struct mtd_partition ij3k_default_nand_part[] __initdata = {
 		.name	= "kernel",
 		/* 5 megabytes, for a kernel with no modules
 		 * or a uImage with a ramdisk attached */
-		.size	= 0x00500000,
+		.size	= KERN_SZE,
 		.offset	= SZ_256K + SZ_128K,
 	},
 	[3] = {
 		.name	= "root",
-		.offset	= SZ_256K + SZ_128K + 0x00500000,
+		.offset	= SZ_256K + SZ_128K + KERN_SZE,
 		.size	= MTDPART_SIZ_FULL,
 	},
 };
