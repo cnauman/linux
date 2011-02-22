@@ -568,7 +568,7 @@ static struct platform_device ij3k_kbd_device = {
 
 static struct s3c2410_ts_mach_info ij3k_ts_cfg __initdata = {
 	.delay = 10000,
-	.presc = 49,
+	.presc = 0xff, //49,
 	.oversampling_shift = 3,
 };
 
@@ -624,7 +624,7 @@ static void __init ij3k_map_io(void)
  * 0-9 LCD configuration
  *
  */
-static char ij3k_features_str[12] __initdata = "0tb";
+static char ij3k_features_str[12] __initdata = "1tb";
 
 static int __init ij3k_features_setup(char *str)
 {
@@ -781,8 +781,8 @@ static void __init ij3k_init(void)
 }
 
 
-MACHINE_START(MINI2440, "MINI2440")
-	/* Maintainer: Michel Pollet <buserror@gmail.com> */
+MACHINE_START(IJ3K_2440, "IJ3K_2440")
+	/* Maintainer: C Nauman <cnauman@diagraph.com> */
 	.phys_io	= S3C2410_PA_UART,
 	.io_pg_offst	= (((u32)S3C24XX_VA_UART) >> 18) & 0xfffc,
 	.boot_params	= S3C2410_SDRAM_PA + 0x100,
