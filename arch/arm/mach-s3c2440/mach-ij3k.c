@@ -139,8 +139,8 @@ static struct s3c2410_udc_mach_info ij3k_udc_cfg __initdata = {
 			   ((refresh) * \
 			   (hsync + margin_left + _xres + margin_right) * \
 			   (vsync + margin_top + _yres + margin_bottom))), \
-	.bpp		= 16,\
-	.type		= (S3C2410_LCDCON1_TFT16BPP |\
+	.bpp		= /*16*/8,\
+	.type		= (S3C2410_LCDCON1_TFT8BPP/*S3C2410_LCDCON1_TFT16BPP*/ |\
 			   S3C2410_LCDCON1_TFT)
 
 static struct s3c2410fb_display ij3k_lcd_cfg[] __initdata = {
@@ -421,8 +421,8 @@ static struct platform_device mini2440_audio = {
 /*
  * ij Keyboard Device
  */
-#define IJ_OFF	KEY_POWER2
-#define IJ_ON	KEY_POWER
+#define IJ_OFF	KEY_F11 //KEY_POWER2
+#define IJ_ON	KEY_F12 //KEY_POWER
 
 // KEY(row, col, val)
 static const uint32_t ij3k_kbd_keymap[] = {
