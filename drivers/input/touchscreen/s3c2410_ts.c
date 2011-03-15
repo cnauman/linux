@@ -170,9 +170,10 @@ static irqreturn_t stylus_irq(int irq, void *dev_id)
 	 * the timer is running, but maybe we ought to verify that the
 	 * timer isn't running anyways. */
 
-	if (down)
-		s3c_adc_start(ts.client, 0, 1 << ts.shift);
-	else
+	if (down) {
+		if (!timer_pending(&touch_timer))
+			s3c_adc_start(ts.client, 0, 1 << ts.shift);
+	} else
 		dev_dbg(ts.dev, "%s: count=%d\n", __func__, ts.count);
 
 	if (ts.features & FEAT_PEN_IRQ) {
