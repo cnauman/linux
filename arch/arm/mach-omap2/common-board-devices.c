@@ -39,8 +39,10 @@ static struct omap2_mcspi_device_config ads7846_mcspi_config = {
 static struct ads7846_platform_data ads7846_config = {
 	.x_max			= 0x0fff,
 	.y_max			= 0x0fff,
+#if !defined(CONFIG_MACH_DEVKIT8000)
 	.x_plate_ohms		= 180,
 	.pressure_max		= 255,
+#endif
 	.debounce_max		= 10,
 	.debounce_tol		= 3,
 	.debounce_rep		= 1,
