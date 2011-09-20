@@ -221,6 +221,15 @@ static struct twl4030_keypad_data devkit8000_kp_data = {
 
 static struct gpio_led gpio_leds[];
 
+#define SYS_LED3 (163)
+static void omap_led_init(void) {
+    int ret = 0;
+	ret = gpio_request_one(SYS_LED3, GPIOF_OUT_INIT_HIGH, "led2");
+	if (ret < 0) {
+		printk(KERN_ERR "Failed to request GPIO for led2\n");
+	}
+}
+
 static int devkit8000_twl_gpio_setup(struct device *dev,
 		unsigned gpio, unsigned ngpio)
 {
@@ -646,6 +655,7 @@ static void __init devkit8000_init(void)
 	omap3_mux_init(board_mux, OMAP_PACKAGE_CUS);
 	omap_serial_init();
 
+        omap_led_init();
 	omap_dm9000_init();
 
 	devkit8000_i2c_init();
