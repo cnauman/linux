@@ -289,6 +289,10 @@ static const struct fb_videomode modedb[] = {
 	/* 864x480 @ 60 Hz, 35.15 kHz hsync */
 	{ NULL, 60, 864, 480, 27777, 1, 1, 1, 1, 0, 0,
 		0, FB_VMODE_NONINTERLACED },
+
+	/* 800x480i @ 50 Hz, 15.625 kHz hsync (PAL RGB) */
+	{ NULL, 50, 800, 480, 58823, 144, 64, 72, 28, 80, 5, 0,
+		FB_VMODE_INTERLACED },
 };
 
 #ifdef CONFIG_FB_MODE_HELPERS
