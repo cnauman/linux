@@ -468,9 +468,9 @@ static void __init omap_dm9000_init(void)
 	/* init the mac address using DIE id */
 	omap_get_die_id(&odi);
 
-	eth_addr[0] = 0x02; /* locally administered */
-	eth_addr[1] = odi.id_1 & 0xff;
-	eth_addr[2] = (odi.id_0 & 0xff000000) >> 24;
+	eth_addr[0] = 0x00; /* locally administered */
+	eth_addr[1] = 0x06; //odi.id_1 & 0xff;
+	eth_addr[2] = 0xb3; //(odi.id_0 & 0xff000000) >> 24;
 	eth_addr[3] = (odi.id_0 & 0x00ff0000) >> 16;
 	eth_addr[4] = (odi.id_0 & 0x0000ff00) >> 8;
 	eth_addr[5] = (odi.id_0 & 0x000000ff);
