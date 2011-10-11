@@ -194,7 +194,7 @@ obj-$(CONFIG_MACH_DEVKIT8000)     	+= board-devkit8000.o \
                                            hsmmc.o
 obj-$(CONFIG_MACH_OMAP3_IJ3K)     	+= board-ij3k.o \
 					   omap_phy_internal.o \
-                                           hsmmc.o
+                                           hsmmc.o ifc-card.o
 obj-$(CONFIG_MACH_OMAP_LDP)		+= board-ldp.o \
 					   board-flash.o \
 					   hsmmc.o

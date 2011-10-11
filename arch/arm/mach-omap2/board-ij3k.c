@@ -384,7 +384,7 @@ static struct platform_device leds_gpio = {
 	},
 };
 
-static struct gpio_keys_button gpio_buttons[] = {
+/*static struct gpio_keys_button gpio_buttons[] = {
 	{
 		.code			= BTN_EXTRA,
 		.gpio			= 26,
@@ -404,8 +404,7 @@ static struct platform_device keys_gpio = {
 	.dev	= {
 		.platform_data	= &gpio_key_info,
 	},
-};
-
+};*/
 
 static void __init devkit8000_init_early(void)
 {
@@ -419,7 +418,8 @@ static void __init devkit8000_init_irq(void)
 	omap3_init_irq();
 }
 
-#define OMAP_DM9000_BASE	0x2c000000
+#define PC104_BASE	        0x2c000000
+#define OMAP_DM9000_BASE	(PC104_BASE)
 
 static struct resource omap_dm9000_resources[] = {
 	[0] = {
@@ -476,10 +476,64 @@ static void __init omap_dm9000_init(void)
 	eth_addr[5] = (odi.id_0 & 0x000000ff);
 }
 
+#define OMAP_FPGA1_GPIO_IRQ	26
+#define OMAP_FPGA2_GPIO_IRQ	24
+static struct resource omap_fpga_resources[] = {
+	[0] = {
+		.start		= (PC104_BASE + 0x200),
+		.end		= (PC104_BASE + 0x200 + 0x0f),
+		.flags		= IORESOURCE_MEM,
+	},
+	[1] = {
+		.start		= (PC104_BASE  + 0x220),
+		.end		= (PC104_BASE + 0x220 + 0x0f),
+		.flags		= IORESOURCE_MEM,
+	},
+	[2] = {
+		.start		= OMAP_GPIO_IRQ(OMAP_FPGA1_GPIO_IRQ),
+		.flags		= IORESOURCE_IRQ | IRQF_TRIGGER_LOW,
+	},
+	[3] = {
+		.start		= OMAP_GPIO_IRQ(OMAP_FPGA2_GPIO_IRQ),
+		.flags		= IORESOURCE_IRQ | IRQF_TRIGGER_LOW,
+	},
+};
+
+static struct platform_device omap_fpga_dev = {
+	.name = "fpga",
+	.id = -1,
+	.num_resources	= ARRAY_SIZE(omap_fpga_resources),
+	.resource	= omap_fpga_resources,
+};
+
+static void __init fpga_init(void)
+{
+	int ret, i, irqs[] = {
+            OMAP_FPGA1_GPIO_IRQ, OMAP_FPGA2_GPIO_IRQ,
+        };
+
+        for (i=0; i < ARRAY_SIZE(irqs); i++) {
+            printk(KERN_INFO "Initialize fpga gpio: %d\n", irqs[i]);
+	    ret = gpio_request_one(irqs[i], GPIOF_IN, "fpga irq");
+	    if (ret < 0) {
+		printk(KERN_ERR "Failed to request GPIO%d for fpga IRQ\n",
+			irqs[i]);
+		return;
+            }
+	}
+
+        i = 159;
+        printk(KERN_INFO "Init test point %d\n", i);
+	if (0 < gpio_request_one(i, GPIOF_OUT_INIT_HIGH, "test point"))
+            printk(KERN_ERR "Failed to req gpio%d for test pt\n", i);
+
+}
+
 static struct platform_device *devkit8000_devices[] __initdata = {
 	&leds_gpio,
-	&keys_gpio,
+//	&keys_gpio,
 	&omap_dm9000_dev,
+        &omap_fpga_dev,
 };
 
 static const struct usbhs_omap_board_data usbhs_bdata __initconst = {
@@ -622,7 +676,7 @@ static struct omap_board_mux board_mux[] __initdata = {
 	/* McSPI4 */
 	OMAP3_MUX(MCBSP1_CLKR, OMAP_MUX_MODE1 | OMAP_PIN_INPUT),
 	OMAP3_MUX(MCBSP1_DX, OMAP_MUX_MODE1 | OMAP_PIN_INPUT),
-	OMAP3_MUX(MCBSP1_DR, OMAP_MUX_MODE1 | OMAP_PIN_INPUT),
+//	OMAP3_MUX(MCBSP1_DR, OMAP_MUX_MODE1 | OMAP_PIN_INPUT),
 	OMAP3_MUX(MCBSP1_FSX, OMAP_MUX_MODE1 | OMAP_PIN_INPUT_PULLUP),
 
 	/* MMC 2 */
@@ -657,6 +711,7 @@ static void __init devkit8000_init(void)
 
         omap_led_init();
 	omap_dm9000_init();
+        fpga_init();
 
 	devkit8000_i2c_init();
 	platform_add_devices(devkit8000_devices,
