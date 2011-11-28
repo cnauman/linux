@@ -398,13 +398,162 @@ static struct gpio_keys_platform_data gpio_key_info = {
 	.nbuttons	= ARRAY_SIZE(gpio_buttons),
 };
 
-static struct platform_device keys_gpio = {
+static struct:w
+platform_device keys_gpio = {
 	.name	= "gpio-keys",
 	.id	= -1,
 	.dev	= {
 		.platform_data	= &gpio_key_info,
 	},
 };*/
+//////////////////////////////////////////////////////////////
+/*
+ * ij Keyboard Device
+ */
+#define IJ_OFF	KEY_F11 //KEY_POWER2
+#define IJ_ON	KEY_F12 //KEY_POWER
+
+// KEY(row, col, val)
+static const uint32_t ij3k_kbd_keymap[] = {
+	KEY(0, 0, KEY_RESERVED),
+	KEY(1, 0, KEY_F2),
+	KEY(2, 0, KEY_F1),
+	KEY(3, 0, KEY_F3),
+	KEY(4, 0, KEY_F4),
+	KEY(5, 0, KEY_RESERVED),
+	KEY(6, 0, IJ_ON),
+	KEY(7, 0, IJ_OFF),
+
+	KEY(0, 1, KEY_8),
+	KEY(1, 1, KEY_9),
+	KEY(2, 1, KEY_RESERVED),
+	KEY(3, 1, KEY_0),
+	KEY(4, 1, KEY_EQUAL),
+	KEY(5, 1, KEY_MINUS),
+	KEY(6, 1, KEY_RESERVED),
+	KEY(7, 1, KEY_BACKSPACE),
+
+	KEY(0, 2, KEY_7),
+	KEY(1, 2, KEY_6),
+	KEY(2, 2, KEY_4),
+	KEY(3, 2, KEY_5),
+	KEY(4, 2, KEY_2),
+	KEY(5, 2, KEY_3),
+	KEY(6, 2, KEY_1),
+	KEY(7, 2, KEY_ESC),
+
+	KEY(0, 3, KEY_I),
+	KEY(1, 3, KEY_O),
+	KEY(2, 3, KEY_LEFT),
+	KEY(3, 3, KEY_SPACE),
+	KEY(4, 3, KEY_LEFTBRACE),
+	KEY(5, 3, KEY_P),
+	KEY(6, 3, KEY_RIGHTBRACE),
+	KEY(7, 3, KEY_BACKSLASH),
+
+	KEY(0, 4, KEY_U),
+	KEY(1, 4, KEY_Y),
+	KEY(2, 4, KEY_R),
+	KEY(3, 4, KEY_T),
+	KEY(4, 4, KEY_W),
+	KEY(7, 4, KEY_TAB),
+	KEY(6, 4, KEY_Q),
+	KEY(5, 4, KEY_E),
+
+	KEY(0, 5, KEY_K),
+	KEY(1, 5, KEY_L),
+	KEY(2, 5, KEY_SEMICOLON),
+	KEY(3, 5, KEY_RESERVED),
+	KEY(4, 5, KEY_RESERVED),
+	KEY(5, 5, KEY_APOSTROPHE),
+	KEY(6, 5, KEY_RESERVED),
+	KEY(7, 5, KEY_ENTER),
+
+	KEY(0, 6, KEY_J),
+	KEY(1, 6, KEY_H),
+	KEY(2, 6, KEY_F),
+	KEY(3, 6, KEY_G),
+	KEY(4, 6, KEY_S),
+	KEY(5, 6, KEY_D),
+	KEY(6, 6, KEY_A),
+	KEY(7, 6, KEY_CAPSLOCK),
+
+	KEY(0, 7, KEY_M),
+	KEY(1, 7, KEY_COMMA),
+	KEY(2, 7, KEY_SLASH),
+	KEY(3, 7, KEY_DOT),
+	KEY(4, 7, KEY_DOWN),
+	KEY(5, 7, KEY_UP),
+	KEY(6, 7, KEY_RIGHT),
+	KEY(7, 7, KEY_RESERVED),
+
+	KEY(0, 8, KEY_N),
+	KEY(1, 8, KEY_B),
+	KEY(2, 8, KEY_C),
+	KEY(3, 8, KEY_V),
+	KEY(4, 8, KEY_Z),
+	KEY(5, 8, KEY_X),
+	KEY(6, 8, KEY_RESERVED),
+	KEY(7, 8, KEY_RESERVED),
+
+	KEY(0, 9, KEY_RESERVED),
+	KEY(1, 9, KEY_RESERVED),
+	KEY(2, 9, KEY_LEFTALT),
+	KEY(3, 9, KEY_DELETE),
+	KEY(4, 9, KEY_LEFTCTRL),
+	KEY(5, 9, KEY_LEFTMETA),
+	KEY(6, 9, KEY_LEFTSHIFT),
+	KEY(7, 9, KEY_RIGHTSHIFT),
+};
+
+static struct matrix_keymap_data ij3k_kbd_keymap_data = {
+	.keymap		= ij3k_kbd_keymap,
+	.keymap_size	= ARRAY_SIZE(ij3k_kbd_keymap),
+};
+
+static const int omap_kbd_row_gpios[] = { 
+                     99, // row 0
+                    100, // row 1
+                    101, // row 2
+                    102, // row 3
+                    103, // row 4
+                    104, // row 5
+                    105, // row 6
+                    106, // row 7
+                };
+
+static const int omap_kbd_col_gpios[] = { 
+                     96, // col 0
+                    111, // col 1
+                     97, // col 2
+                     95, // col 3
+                     94, // col 4
+                     98, // col 5
+                    167, // col 6
+                    126, // col 7
+                    109, // col 8
+                    110, // col 9
+                };
+
+static struct matrix_keypad_platform_data ij3k_kbd_pdata = {
+	.keymap_data		= &ij3k_kbd_keymap_data,
+	.row_gpios		= omap_kbd_row_gpios,
+	.col_gpios		= omap_kbd_col_gpios,
+	.num_row_gpios		= ARRAY_SIZE(omap_kbd_row_gpios),
+	.num_col_gpios		= ARRAY_SIZE(omap_kbd_col_gpios),
+	.col_scan_delay_us	= 10,
+	.debounce_ms		= 10,
+        .active_low             = 1,
+//	.wakeup			= 1,
+};
+
+static struct platform_device omap_kbd_dev = {
+	.name		= "matrix-keypad",
+	.id		= -1,
+	.dev		= {
+		.platform_data = &ij3k_kbd_pdata,
+	},
+};
 
 static void __init devkit8000_init_early(void)
 {
@@ -533,6 +682,7 @@ static struct platform_device *devkit8000_devices[] __initdata = {
 	&leds_gpio,
 //	&keys_gpio,
 	&omap_dm9000_dev,
+        &omap_kbd_dev,
         &omap_fpga_dev,
 };
 
@@ -699,6 +849,30 @@ static struct omap_board_mux board_mux[] __initdata = {
 	/* TPS IRQ */
 	OMAP3_MUX(SYS_NIRQ, OMAP_MUX_MODE0 | OMAP_WAKEUP_EN | \
 			OMAP_PIN_INPUT_PULLUP),
+
+        /* kbd cols */
+        OMAP3_MUX(CAM_XCLKA, OMAP_MUX_MODE4 | OMAP_PIN_INPUT),
+        OMAP3_MUX(CAM_XCLKB, OMAP_MUX_MODE4 | OMAP_PIN_INPUT),
+        OMAP3_MUX(CAM_PCLK, OMAP_MUX_MODE4 | OMAP_PIN_INPUT),
+        OMAP3_MUX(CAM_VS, OMAP_MUX_MODE4 | OMAP_PIN_INPUT),
+        OMAP3_MUX(CAM_HS, OMAP_MUX_MODE4 | OMAP_PIN_INPUT),
+        OMAP3_MUX(CAM_FLD, OMAP_MUX_MODE4 | OMAP_PIN_INPUT),
+        OMAP3_MUX(CAM_WEN, OMAP_MUX_MODE4 | OMAP_PIN_INPUT),
+        OMAP3_MUX(CAM_STROBE, OMAP_MUX_MODE4 | OMAP_PIN_INPUT),
+
+        /* kbd rows */
+        OMAP3_MUX(CAM_D0, OMAP_MUX_MODE4 | OMAP_PIN_INPUT | OMAP_PIN_INPUT_PULLUP),
+        OMAP3_MUX(CAM_D1, OMAP_MUX_MODE4 | OMAP_PIN_INPUT | OMAP_PIN_INPUT_PULLUP),
+        OMAP3_MUX(CAM_D2, OMAP_MUX_MODE4 | OMAP_PIN_INPUT | OMAP_PIN_INPUT_PULLUP),
+        OMAP3_MUX(CAM_D3, OMAP_MUX_MODE4 | OMAP_PIN_INPUT | OMAP_PIN_INPUT_PULLUP),
+        OMAP3_MUX(CAM_D4, OMAP_MUX_MODE4 | OMAP_PIN_INPUT | OMAP_PIN_INPUT_PULLUP),
+        OMAP3_MUX(CAM_D5, OMAP_MUX_MODE4 | OMAP_PIN_INPUT | OMAP_PIN_INPUT_PULLUP),
+        OMAP3_MUX(CAM_D6, OMAP_MUX_MODE4 | OMAP_PIN_INPUT | OMAP_PIN_INPUT_PULLUP),
+        OMAP3_MUX(CAM_D7, OMAP_MUX_MODE4 | OMAP_PIN_INPUT | OMAP_PIN_INPUT_PULLUP),
+
+        /* kbd cols */
+        OMAP3_MUX(CAM_D10, OMAP_MUX_MODE4 | OMAP_PIN_INPUT),
+        OMAP3_MUX(CAM_D11, OMAP_MUX_MODE4 | OMAP_PIN_INPUT),
 
 	{ .reg_offset = OMAP_MUX_TERMINATOR },
 };
