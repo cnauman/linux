@@ -419,7 +419,7 @@ static void __init devkit8000_init_irq(void)
 }
 
 #define PC104_BASE	        0x2c000000
-#define OMAP_DM9000_BASE	(PC104_BASE)
+#define OMAP_DM9000_BASE	((PC104_BASE) + 0x300)
 
 static struct resource omap_dm9000_resources[] = {
 	[0] = {
@@ -428,13 +428,13 @@ static struct resource omap_dm9000_resources[] = {
 		.flags		= IORESOURCE_MEM,
 	},
 	[1] = {
-		.start		= (OMAP_DM9000_BASE + 0x400),
-		.end		= (OMAP_DM9000_BASE + 0x400 + 0x4 - 1),
+		.start		= (OMAP_DM9000_BASE + 0x4),
+		.end		= (OMAP_DM9000_BASE + 0x4 + 0x4 - 1),
 		.flags		= IORESOURCE_MEM,
 	},
 	[2] = {
 		.start		= OMAP_GPIO_IRQ(OMAP_DM9000_GPIO_IRQ),
-		.flags		= IORESOURCE_IRQ | IRQF_TRIGGER_LOW,
+		.flags		= IORESOURCE_IRQ | IRQF_TRIGGER_RISING,
 	},
 };
 
