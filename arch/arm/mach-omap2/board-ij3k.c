@@ -51,6 +51,7 @@
 #include <plat/mcspi.h>
 #include <linux/input/matrix_keypad.h>
 #include <linux/spi/spi.h>
+#include <linux/spi/ads7846.h>
 #include <linux/dm9000.h>
 #include <linux/interrupt.h>
 
@@ -60,8 +61,18 @@
 #include "hsmmc.h"
 #include "common-board-devices.h"
 
+/* Reserved omap irqs 6, 8 35, 49-52, 53*, 64, 67-71, 79, 84-85, 95
+ * (53 is shared with iva2.2 controller
+ */
+#define OMAP_FPGA1_GPIO_IRQ	24
 #define OMAP_DM9000_GPIO_IRQ	25
+#define OMAP_FPGA2_GPIO_IRQ	26
 #define OMAP3_DEVKIT_TS_GPIO	27
+
+#define OMAP_FPGA1_SOFT_IRQ	67
+#define OMAP_DM9000_SOFT_IRQ	68
+#define OMAP_FPGA2_SOFT_IRQ	69
+#define OMAP3_TS_SOFT_IRQ	70
 
 static struct mtd_partition ij3k_nand_partitions[] = {
 	/* All the partition sizes are listed in terms of NAND block size */
@@ -106,17 +117,17 @@ static struct omap2_hsmmc_info mmc[] = {
 static int ij3k_panel_enable_lcd(struct omap_dss_device *dssdev)
 {
 	if (gpio_is_valid(dssdev->reset_gpio))
-		gpio_set_value_cansleep(dssdev->reset_gpio, 1);
+		gpio_set_value_cansleep(dssdev->reset_gpio, 0);
 	return 0;
 }
 
 static void ij3k_panel_disable_lcd(struct omap_dss_device *dssdev)
 {
 	if (gpio_is_valid(dssdev->reset_gpio))
-		gpio_set_value_cansleep(dssdev->reset_gpio, 0);
+		gpio_set_value_cansleep(dssdev->reset_gpio, 1);
 }
 
-static int ij3k_panel_enable_dvi(struct omap_dss_device *dssdev)
+/*static int ij3k_panel_enable_dvi(struct omap_dss_device *dssdev)
 {
 	if (gpio_is_valid(dssdev->reset_gpio))
 		gpio_set_value_cansleep(dssdev->reset_gpio, 1);
@@ -127,7 +138,7 @@ static void ij3k_panel_disable_dvi(struct omap_dss_device *dssdev)
 {
 	if (gpio_is_valid(dssdev->reset_gpio))
 		gpio_set_value_cansleep(dssdev->reset_gpio, 0);
-}
+}*/
 
 static struct regulator_consumer_supply ij3k_vmmc1_supply[] = {
 	REGULATOR_SUPPLY("vmmc", "omap_hsmmc.0"),
@@ -153,31 +164,40 @@ static struct omap_dss_device ij3k_lcd_device = {
 };
 
 static struct panel_generic_dpi_data dvi_panel = {
-	.name			= "generic",
-	.platform_enable        = ij3k_panel_enable_dvi,
-	.platform_disable       = ij3k_panel_disable_dvi,
+	.name			= "optrex",
+	.platform_enable        = ij3k_panel_enable_lcd,
+	.platform_disable       = ij3k_panel_disable_lcd,
+	//.platform_enable        = ij3k_panel_enable_dvi,
+	//.platform_disable       = ij3k_panel_disable_dvi,
 };
-
 static struct omap_dss_device ij3k_dvi_device = {
-	.name                   = "dvi",
+	.name                   = "stn",
 	.type                   = OMAP_DISPLAY_TYPE_DPI,
 	.driver_name            = "generic_dpi_panel",
 	.data			= &dvi_panel,
-	.phy.dpi.data_lines     = 24,
+	.phy.dpi.data_lines     = 16,
+        /*.panel.config           = OMAP_DSS_LCD_IVS |
+				  OMAP_DSS_LCD_IHS | OMAP_DSS_LCD_IEO,*/
+        /*.panel.timings          = 
+        {
+            .x_res    = 320,
+            .y_res    = 240,
+            .pixel_clock = 2500,
+        }, */
 };
 
-static struct omap_dss_device ij3k_tv_device = {
+/*static struct omap_dss_device ij3k_tv_device = {
 	.name                   = "tv",
 	.driver_name            = "venc",
 	.type                   = OMAP_DISPLAY_TYPE_VENC,
 	.phy.venc.type          = OMAP_DSS_VENC_TYPE_SVIDEO,
-};
+};*/
 
 
 static struct omap_dss_device *ij3k_dss_devices[] = {
 	&ij3k_lcd_device,
 	&ij3k_dvi_device,
-	&ij3k_tv_device,
+//	&ij3k_tv_device,
 };
 
 static struct omap_dss_board_info ij3k_dss_data = {
@@ -241,25 +261,26 @@ static int ij3k_twl_gpio_setup(struct device *dev,
 	omap2_hsmmc_init(mmc);
 
 	/* TWL4030_GPIO_MAX + 1 == ledB, PMU_STAT (out, active low LED) */
-	gpio_leds[2].gpio = gpio + TWL4030_GPIO_MAX + 1;
+	gpio_leds[1].gpio = gpio + TWL4030_GPIO_MAX + 0; /* kb_caps */
+	gpio_leds[2].gpio = gpio + TWL4030_GPIO_MAX + 1; /* kb_pwr */
 
 	/* TWL4030_GPIO_MAX + 0 is "LCD_PWREN" (out, active high) */
-	ij3k_lcd_device.reset_gpio = gpio + TWL4030_GPIO_MAX + 0;
+/*	ij3k_lcd_device.reset_gpio = gpio + TWL4030_GPIO_MAX + 0;
 	ret = gpio_request_one(ij3k_lcd_device.reset_gpio,
-			       GPIOF_OUT_INIT_LOW, "LCD_PWREN");
+			       GPIOF_OUT_INIT_LOW, "KBD_PWREN");
 	if (ret < 0) {
 		ij3k_lcd_device.reset_gpio = -EINVAL;
 		printk(KERN_ERR "Failed to request GPIO for LCD_PWRN\n");
-	}
+	}*/
 
 	/* gpio + 7 is "DVI_PD" (out, active low) */
-	ij3k_dvi_device.reset_gpio = gpio + 7;
+	/*ij3k_dvi_device.reset_gpio = gpio + 7;
 	ret = gpio_request_one(ij3k_dvi_device.reset_gpio,
 			       GPIOF_OUT_INIT_LOW, "DVI PowerDown");
 	if (ret < 0) {
 		ij3k_dvi_device.reset_gpio = -EINVAL;
 		printk(KERN_ERR "Failed to request GPIO for DVI PowerDown\n");
-	}
+	}*/
 
 	return 0;
 }
@@ -355,24 +376,18 @@ static struct gpio_led gpio_leds[] = {
 		.gpio			= 186,
 		.active_low		= true,
 	},
-	/*{
-		.name			= "led2",
-		.default_trigger	= "mmc0",
-		.gpio			= 163,
+	{
+		.name			= "kb_pwr",
+		.default_trigger	= "none",
+		.gpio			= -1,
 		.active_low		= true,
 	},
 	{
-		.name			= "ledB",
+		.name			= "kb_caps",
 		.default_trigger	= "none",
-		.gpio			= 153,
-		.active_low             = true,
+		.gpio			= -1,
+		.active_low		= true,
 	},
-	{
-		.name			= "led3",
-		.default_trigger	= "none",
-		.gpio			= 164,
-		.active_low             = true,
-	},*/
 };
 
 static struct gpio_led_platform_data gpio_led_info = {
@@ -558,7 +573,46 @@ static struct platform_device omap_kbd_dev = {
 		.platform_data = &ij3k_kbd_pdata,
 	},
 };
+#if 0
+static int __init lcd_set_displaytype(char *str)
+{
+    printk("Parsing: %s\n", str);
+	int stn_flag = simple_strtol(str, NULL, 0);
+#if 0
+	switch (disp_type) {
+	case MTYPE_STN320x240:
+		cmx2xx_display = &generic_stn_320x240;
+		break;
+	case MTYPE_TFT640x480:
+		cmx2xx_display = &generic_tft_640x480;
+		break;
+	case MTYPE_CRT640x480:
+		cmx2xx_display = &generic_crt_640x480;
+		break;
+	case MTYPE_CRT800x600:
+		cmx2xx_display = &generic_crt_800x600;
+		break;
+	case MTYPE_TFT320x240:
+		cmx2xx_display = &generic_tft_320x240;
+		break;
+	case MTYPE_STN640x480:
+		cmx2xx_display = &generic_stn_640x480;
+		break;
+	default: /* fallback to CRT 640x480 */
+		cmx2xx_display = &generic_crt_640x480;
+		break;
+	}
+#endif
+        if (stn_flag) {
+            printk("Changing to 8-bit cstn display\n");
+	    ij3k_lcd_device.phy.dpi.data_lines     = 8;
+            ij3k_lcd_device.panel.config &= ~OMAP_DSS_LCD_TFT;
+        }
+	return 1;
+}
 
+__setup("stn_lcd=", lcd_set_displaytype);
+#endif
 static void __init ij3k_init_early(void)
 {
 	omap2_init_common_infrastructure();
@@ -629,8 +683,6 @@ static void __init omap_dm9000_init(void)
 	eth_addr[5] = (odi.id_0 & 0x000000ff);
 }
 
-#define OMAP_FPGA1_GPIO_IRQ	26
-#define OMAP_FPGA2_GPIO_IRQ	24
 static struct resource omap_fpga_resources[] = {
 	[0] = {
 		.start		= (PC104_BASE + 0x200),
@@ -643,13 +695,20 @@ static struct resource omap_fpga_resources[] = {
 		.flags		= IORESOURCE_MEM,
 	},
 	[2] = {
-		.start		= OMAP_GPIO_IRQ(OMAP_FPGA1_GPIO_IRQ),
-		.flags		= IORESOURCE_IRQ | IRQF_TRIGGER_LOW,
+		.start		= OMAP_FPGA1_GPIO_IRQ,
+//		.end		= OMAP_FPGA1_SOFT_IRQ,
+		.flags		= IORESOURCE_IRQ | IRQF_TRIGGER_RISING,
 	},
 	[3] = {
-		.start		= OMAP_GPIO_IRQ(OMAP_FPGA2_GPIO_IRQ),
-		.flags		= IORESOURCE_IRQ | IRQF_TRIGGER_LOW,
+		.start		= OMAP_FPGA2_GPIO_IRQ,
+//		.end		= OMAP_FPGA2_SOFT_IRQ,
+		.flags		= IORESOURCE_IRQ | IRQF_TRIGGER_RISING,
 	},
+        // deferred irq's
+/*	[4] = {
+		.start		= OMAP_DM9000_GPIO_IRQ,
+		.end		= OMAP_DM9000_SOFT_IRQ,
+	},*/
 };
 
 static struct platform_device omap_fpga_dev = {
@@ -661,11 +720,11 @@ static struct platform_device omap_fpga_dev = {
 
 static void __init fpga_init(void)
 {
-	int ret, i, irqs[] = {
+	int /*ret,*/ i/*, irqs[] = {
             OMAP_FPGA1_GPIO_IRQ, OMAP_FPGA2_GPIO_IRQ,
-        };
+        }*/;
 
-        for (i=0; i < ARRAY_SIZE(irqs); i++) {
+        /*for (i=0; i < ARRAY_SIZE(irqs); i++) {
             printk(KERN_INFO "Initialize fpga gpio: %d\n", irqs[i]);
 	    ret = gpio_request_one(irqs[i], GPIOF_IN, "fpga irq");
 	    if (ret < 0) {
@@ -673,7 +732,7 @@ static void __init fpga_init(void)
 			irqs[i]);
 		return;
             }
-	}
+	}*/
 
         i = 159;
         printk(KERN_INFO "Init test point %d\n", i);
@@ -684,7 +743,6 @@ static void __init fpga_init(void)
 
 static struct platform_device *ij3k_devices[] __initdata = {
 	&leds_gpio,
-//	&keys_gpio,
 	&omap_dm9000_dev,
         &omap_kbd_dev,
         &omap_fpga_dev,
@@ -878,9 +936,43 @@ static struct omap_board_mux board_mux[] __initdata = {
         OMAP3_MUX(CAM_D10, OMAP_MUX_MODE4 | OMAP_PIN_INPUT),
         OMAP3_MUX(CAM_D11, OMAP_MUX_MODE4 | OMAP_PIN_INPUT),
 
+        /* for scope i/o */
+        OMAP3_MUX(SYS_BOOT5, OMAP_MUX_MODE4 | OMAP_PIN_OUTPUT),
+	OMAP3_MUX(ETK_D10, OMAP_MUX_MODE4 | OMAP_PIN_INPUT_PULLUP),
+	OMAP3_MUX(ETK_D12, OMAP_MUX_MODE4 | OMAP_PIN_INPUT_PULLUP),
+        OMAP3_MUX(UART3_RTS_SD, OMAP_MUX_MODE4 | OMAP_PIN_OUTPUT),
+
 	{ .reg_offset = OMAP_MUX_TERMINATOR },
 };
 #endif
+
+static struct omap_musb_board_data musb_board_data = {
+	.interface_type		= MUSB_INTERFACE_ULPI,
+	.mode			= MUSB_OTG,
+	.power			= 500,
+	.extvbus                = 1,
+};
+
+static struct ads7846_platform_data ads7846_config = {
+	.x_max			= 0x0fff,
+	.y_max			= 0x0fff,
+	.x_plate_ohms		= 180,
+#if !defined(CONFIG_MACH_DEVKIT8000) && !defined(CONFIG_MACH_OMAP3_IJ3K)
+	.pressure_max		= 255,
+#endif
+	.debounce_max		= 10,
+#if defined(CONFIG_MACH_OMAP3_IJ3K)
+        .settle_delay_usecs     = 200,
+//        .swap_xy		= 1,
+	.debounce_tol		= 12, //6,
+        .penirq_recheck_delay_usecs = 10,
+#else
+	.debounce_tol		= 3,
+#endif
+	.debounce_rep		= 1,
+	.gpio_pendown		= -EINVAL,
+	.keep_vref_on		= 1,
+};
 
 static void __init ij3k_init(void)
 {
@@ -897,9 +989,9 @@ static void __init ij3k_init(void)
 
 	omap_display_init(&ij3k_dss_data);
 
-	omap_ads7846_init(2, OMAP3_DEVKIT_TS_GPIO, 0, NULL);
+	omap_ads7846_init(2, OMAP3_DEVKIT_TS_GPIO, 0, NULL); //&ads7846_config);
 
-	usb_musb_init(NULL);
+	usb_musb_init(&musb_board_data);
 	usbhs_init(&usbhs_bdata);
 	omap_nand_flash_init(NAND_BUSWIDTH_16, ij3k_nand_partitions,
 			     ARRAY_SIZE(ij3k_nand_partitions));

@@ -39,8 +39,8 @@ MODULE_PARM_DESC(total_size, "Total device size in bytes");
 #else
 #define FRAM24_TOTAL_SIZE CONFIG_MTD_FRAM_SIZE
 #endif //MODULE
-
-#define CHUNK_SZE	(512) /*(128)*/
+#define USE_RAM
+#define CHUNK_SZE	(32) //(512) /*(128)*/
 /* Probe at 0x50 only */
 static unsigned short normal_i2c[] = { 0x50, I2C_CLIENT_END };
 
@@ -56,6 +56,9 @@ struct fram24_data {
 	struct list_head list;
 	struct mtd_info mtd_info;
 	int id;
+#ifdef USE_RAM
+        void * bufr;
+#endif
 };
 
 /*
@@ -73,43 +76,10 @@ static size_t fram24_bytes_to_eop(size_t addr, size_t count)
 	return (count < to_eop) ? count : to_eop;
 }
 
-/*
- * Erase implemented as no-op. There is no need to erase before write. 
- */
-static int fram24_erase(struct mtd_info *mtd, struct erase_info *instr)
-{
-	if (instr->addr + instr->len > mtd->size) {
-		return -EINVAL;
-	}
-
-	/* Do nothing */
-	
-	instr->state = MTD_ERASE_DONE;
-	mtd_erase_callback(instr);
-
-	return 0;
-}
-
-/*
- * Read len bytes from the eeprom to buf. 
- */
-static int fram24_read(struct mtd_info *mtd, loff_t from, size_t len,
-		size_t *retlen, u_char *buf)
-{
-	struct i2c_client *client;
-	struct i2c_msg msg[2];
+static int read_from_part(struct i2c_client * client, size_t from, size_t len, u_char * buf) {
+    	struct i2c_msg msg[2];
         uint8_t addr[2];
 
-	DBG("fram24_read(from:%ld, len:%ld)\n", (long)from, (long)len);
-
-	if (from >= mtd->size) {
-		return -EINVAL;
-	}
-        if (len > (mtd->size - from))
-            len = mtd->size - from;
-
-	client = (struct i2c_client *)mtd->priv;
-	
 	/* msg[0]: write two byte address */
         addr[0] = from >> 8;
         addr[1] = from;
@@ -125,10 +95,36 @@ static int fram24_read(struct mtd_info *mtd, loff_t from, size_t len,
 	msg[1].buf = buf;
 
 	if (i2c_transfer(client->adapter, &msg[0], 2)!=2) {
-		*retlen = 0;
 		return -EIO;
 	}
+        return len;
+}
 
+/*
+ * Read len bytes from the eeprom to buf. 
+ */
+static int fram24_read(struct mtd_info *mtd, loff_t from, size_t len,
+		size_t *retlen, u_char *buf)
+{
+	struct i2c_client *client;
+	struct fram24_data *data;
+        int ret;
+	client = (struct i2c_client *)mtd->priv;
+	data = i2c_get_clientdata(client);
+
+	DBG("fram24_read(from:%ld, len:%ld)\n", (long)from, (long)len);
+
+	if (from >= mtd->size) {
+		return -EINVAL;
+	}
+        if (len > (mtd->size - from))
+            len = mtd->size - from;
+#ifndef USE_RAM
+        ret = read_from_part(client, from, len, buf);
+        if (ret != len) return ret;
+#else
+        memcpy(buf, data->bufr+from, len);
+#endif
 	*retlen = len;
 	return 0;
 }
@@ -145,6 +141,7 @@ static int fram24_write(struct mtd_info *mtd, loff_t to, size_t len,
 {
 	u_char writebuf[CHUNK_SZE+2];
 	struct i2c_client *client;
+	struct fram24_data *data;
 	struct i2c_msg msg[2];
 
         uint16_t addr;
@@ -157,15 +154,17 @@ static int fram24_write(struct mtd_info *mtd, loff_t to, size_t len,
 	}
 
 	client = (struct i2c_client *)mtd->priv;
+	data = i2c_get_clientdata(client);
 	wrote = 0;
 	remain = len;
         addr = to;
 
 	while (remain) {
 		chunk = fram24_bytes_to_eop(addr, remain);
-		if (1) { //memcmp(readbuf, (char*)&buf[wrote], chunk)!=0) {
+		if (/*1) { */0 != memcmp(data->bufr+addr, (char*)&buf[wrote], chunk)) {
 			DBG("Doing write %d @ 0x%04x \n", chunk, addr);
 			/* msg[0]: write two byte address */
+#if 1 //ndef USE_RAM
 			msg[0].addr = client->addr;
 			msg[0].flags = 0;
 			msg[0].len = 2 + chunk;
@@ -178,6 +177,7 @@ static int fram24_write(struct mtd_info *mtd, loff_t to, size_t len,
 				*retlen = wrote;
 				return -EIO;
 			}
+#endif
 		} else {
 			DBG("Write not neccessary\n");
 		}
@@ -187,8 +187,11 @@ static int fram24_write(struct mtd_info *mtd, loff_t to, size_t len,
 		wrote += chunk;
 
 		/* sorry about this, we should poll ACK */
-		msleep(5);
+		//msleep(5);
 	}
+#ifdef USE_RAM
+        memcpy(data->bufr + to, buf, wrote);
+#endif
 	*retlen=wrote;
 	return 0;
 }
@@ -242,13 +245,12 @@ static int fram24_init_client(struct i2c_client *client)
 	/* Setup the MTD structure */
 	mtd->name = "I2C FRAM";
 	mtd->type = MTD_RAM;
-	mtd->flags = MTD_WRITEABLE;
+	mtd->flags = MTD_CAP_RAM; //MTD_WRITEABLE;
 	mtd->size = FRAM24_TOTAL_SIZE;
 	mtd->erasesize = PAGE_SIZE; /*CHUNK_SZE;*/
 	mtd->priv = client;
 
 	mtd->owner = THIS_MODULE;
-	mtd->erase = fram24_erase;
 	mtd->read = fram24_read;
 	mtd->write = fram24_write;
 
@@ -317,7 +319,16 @@ static int fram24_probe(struct i2c_client *client, const struct i2c_device_id *i
 	if ((err = fram24_init_client(client)) != 0) {
 		goto exit_free;
 	}
+#ifdef USE_RAM
+        /* we mirror the data in a memory buffer */
+        if (!(data->bufr = kmalloc(FRAM24_TOTAL_SIZE, GFP_KERNEL))) {
+            err = -ENOMEM;
+            goto exit_free;
+        }
 
+        err = read_from_part(client, 0, FRAM24_TOTAL_SIZE, data->bufr);
+        if (FRAM24_TOTAL_SIZE != err) goto exit_free;
+#endif
 	/* Add client to local list */
 	list_add(&data->list, &fram24_clients);
 
