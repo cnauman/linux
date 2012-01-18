@@ -1,5 +1,5 @@
 /*
- * board-devkit8000.c - TimLL Devkit8000
+ * board-ij3k.c - TimLL Devkit8000
  *
  * Copyright (C) 2009 Kim Botherway
  * Copyright (C) 2010 Thomas Weber
@@ -63,7 +63,7 @@
 #define OMAP_DM9000_GPIO_IRQ	25
 #define OMAP3_DEVKIT_TS_GPIO	27
 
-static struct mtd_partition devkit8000_nand_partitions[] = {
+static struct mtd_partition ij3k_nand_partitions[] = {
 	/* All the partition sizes are listed in terms of NAND block size */
 	{
 		.name		= "X-Loader",
@@ -103,48 +103,48 @@ static struct omap2_hsmmc_info mmc[] = {
 	{}	/* Terminator */
 };
 
-static int devkit8000_panel_enable_lcd(struct omap_dss_device *dssdev)
+static int ij3k_panel_enable_lcd(struct omap_dss_device *dssdev)
 {
 	if (gpio_is_valid(dssdev->reset_gpio))
 		gpio_set_value_cansleep(dssdev->reset_gpio, 1);
 	return 0;
 }
 
-static void devkit8000_panel_disable_lcd(struct omap_dss_device *dssdev)
+static void ij3k_panel_disable_lcd(struct omap_dss_device *dssdev)
 {
 	if (gpio_is_valid(dssdev->reset_gpio))
 		gpio_set_value_cansleep(dssdev->reset_gpio, 0);
 }
 
-static int devkit8000_panel_enable_dvi(struct omap_dss_device *dssdev)
+static int ij3k_panel_enable_dvi(struct omap_dss_device *dssdev)
 {
 	if (gpio_is_valid(dssdev->reset_gpio))
 		gpio_set_value_cansleep(dssdev->reset_gpio, 1);
 	return 0;
 }
 
-static void devkit8000_panel_disable_dvi(struct omap_dss_device *dssdev)
+static void ij3k_panel_disable_dvi(struct omap_dss_device *dssdev)
 {
 	if (gpio_is_valid(dssdev->reset_gpio))
 		gpio_set_value_cansleep(dssdev->reset_gpio, 0);
 }
 
-static struct regulator_consumer_supply devkit8000_vmmc1_supply[] = {
+static struct regulator_consumer_supply ij3k_vmmc1_supply[] = {
 	REGULATOR_SUPPLY("vmmc", "omap_hsmmc.0"),
 };
 
 /* ads7846 on SPI */
-static struct regulator_consumer_supply devkit8000_vio_supply[] = {
+static struct regulator_consumer_supply ij3k_vio_supply[] = {
 	REGULATOR_SUPPLY("vcc", "spi2.0"),
 };
 
 static struct panel_generic_dpi_data lcd_panel = {
 	.name			= "generic",
-	.platform_enable        = devkit8000_panel_enable_lcd,
-	.platform_disable       = devkit8000_panel_disable_lcd,
+	.platform_enable        = ij3k_panel_enable_lcd,
+	.platform_disable       = ij3k_panel_disable_lcd,
 };
 
-static struct omap_dss_device devkit8000_lcd_device = {
+static struct omap_dss_device ij3k_lcd_device = {
 	.name                   = "lcd",
 	.type                   = OMAP_DISPLAY_TYPE_DPI,
 	.driver_name            = "generic_dpi_panel",
@@ -154,11 +154,11 @@ static struct omap_dss_device devkit8000_lcd_device = {
 
 static struct panel_generic_dpi_data dvi_panel = {
 	.name			= "generic",
-	.platform_enable        = devkit8000_panel_enable_dvi,
-	.platform_disable       = devkit8000_panel_disable_dvi,
+	.platform_enable        = ij3k_panel_enable_dvi,
+	.platform_disable       = ij3k_panel_disable_dvi,
 };
 
-static struct omap_dss_device devkit8000_dvi_device = {
+static struct omap_dss_device ij3k_dvi_device = {
 	.name                   = "dvi",
 	.type                   = OMAP_DISPLAY_TYPE_DPI,
 	.driver_name            = "generic_dpi_panel",
@@ -166,7 +166,7 @@ static struct omap_dss_device devkit8000_dvi_device = {
 	.phy.dpi.data_lines     = 24,
 };
 
-static struct omap_dss_device devkit8000_tv_device = {
+static struct omap_dss_device ij3k_tv_device = {
 	.name                   = "tv",
 	.driver_name            = "venc",
 	.type                   = OMAP_DISPLAY_TYPE_VENC,
@@ -174,19 +174,19 @@ static struct omap_dss_device devkit8000_tv_device = {
 };
 
 
-static struct omap_dss_device *devkit8000_dss_devices[] = {
-	&devkit8000_lcd_device,
-	&devkit8000_dvi_device,
-	&devkit8000_tv_device,
+static struct omap_dss_device *ij3k_dss_devices[] = {
+	&ij3k_lcd_device,
+	&ij3k_dvi_device,
+	&ij3k_tv_device,
 };
 
-static struct omap_dss_board_info devkit8000_dss_data = {
-	.num_devices = ARRAY_SIZE(devkit8000_dss_devices),
-	.devices = devkit8000_dss_devices,
-	.default_device = &devkit8000_lcd_device,
+static struct omap_dss_board_info ij3k_dss_data = {
+	.num_devices = ARRAY_SIZE(ij3k_dss_devices),
+	.devices = ij3k_dss_devices,
+	.default_device = &ij3k_lcd_device,
 };
 
-static uint32_t board_keymap[] = {
+/*static uint32_t board_keymap[] = {
 	KEY(0, 0, KEY_1),
 	KEY(1, 0, KEY_2),
 	KEY(2, 0, KEY_3),
@@ -212,12 +212,12 @@ static struct matrix_keymap_data board_map_data = {
 	.keymap_size		= ARRAY_SIZE(board_keymap),
 };
 
-static struct twl4030_keypad_data devkit8000_kp_data = {
+static struct twl4030_keypad_data ij3k_kp_data = {
 	.keymap_data	= &board_map_data,
 	.rows		= 6,
 	.cols		= 6,
 	.rep		= 1,
-};
+};*/
 
 static struct gpio_led gpio_leds[];
 
@@ -230,7 +230,7 @@ static void omap_led_init(void) {
 	}
 }
 
-static int devkit8000_twl_gpio_setup(struct device *dev,
+static int ij3k_twl_gpio_setup(struct device *dev,
 		unsigned gpio, unsigned ngpio)
 {
 	int ret;
@@ -244,43 +244,43 @@ static int devkit8000_twl_gpio_setup(struct device *dev,
 	gpio_leds[2].gpio = gpio + TWL4030_GPIO_MAX + 1;
 
 	/* TWL4030_GPIO_MAX + 0 is "LCD_PWREN" (out, active high) */
-	devkit8000_lcd_device.reset_gpio = gpio + TWL4030_GPIO_MAX + 0;
-	ret = gpio_request_one(devkit8000_lcd_device.reset_gpio,
+	ij3k_lcd_device.reset_gpio = gpio + TWL4030_GPIO_MAX + 0;
+	ret = gpio_request_one(ij3k_lcd_device.reset_gpio,
 			       GPIOF_OUT_INIT_LOW, "LCD_PWREN");
 	if (ret < 0) {
-		devkit8000_lcd_device.reset_gpio = -EINVAL;
+		ij3k_lcd_device.reset_gpio = -EINVAL;
 		printk(KERN_ERR "Failed to request GPIO for LCD_PWRN\n");
 	}
 
 	/* gpio + 7 is "DVI_PD" (out, active low) */
-	devkit8000_dvi_device.reset_gpio = gpio + 7;
-	ret = gpio_request_one(devkit8000_dvi_device.reset_gpio,
+	ij3k_dvi_device.reset_gpio = gpio + 7;
+	ret = gpio_request_one(ij3k_dvi_device.reset_gpio,
 			       GPIOF_OUT_INIT_LOW, "DVI PowerDown");
 	if (ret < 0) {
-		devkit8000_dvi_device.reset_gpio = -EINVAL;
+		ij3k_dvi_device.reset_gpio = -EINVAL;
 		printk(KERN_ERR "Failed to request GPIO for DVI PowerDown\n");
 	}
 
 	return 0;
 }
 
-static struct twl4030_gpio_platform_data devkit8000_gpio_data = {
+static struct twl4030_gpio_platform_data ij3k_gpio_data = {
 	.gpio_base	= OMAP_MAX_GPIO_LINES,
 	.irq_base	= TWL4030_GPIO_IRQ_BASE,
 	.irq_end	= TWL4030_GPIO_IRQ_END,
 	.use_leds	= true,
 	.pulldowns	= BIT(1) | BIT(2) | BIT(6) | BIT(8) | BIT(13)
 				| BIT(15) | BIT(16) | BIT(17),
-	.setup		= devkit8000_twl_gpio_setup,
+	.setup		= ij3k_twl_gpio_setup,
 };
 
-static struct regulator_consumer_supply devkit8000_vpll1_supplies[] = {
+static struct regulator_consumer_supply ij3k_vpll1_supplies[] = {
 	REGULATOR_SUPPLY("vdds_dsi", "omapdss"),
 	REGULATOR_SUPPLY("vdds_dsi", "omapdss_dsi1"),
 };
 
 /* VMMC1 for MMC1 pins CMD, CLK, DAT0..DAT3 (20 mA, plus card == max 220 mA) */
-static struct regulator_init_data devkit8000_vmmc1 = {
+static struct regulator_init_data ij3k_vmmc1 = {
 	.constraints = {
 		.min_uV			= 1850000,
 		.max_uV			= 3150000,
@@ -290,12 +290,12 @@ static struct regulator_init_data devkit8000_vmmc1 = {
 					| REGULATOR_CHANGE_MODE
 					| REGULATOR_CHANGE_STATUS,
 	},
-	.num_consumer_supplies	= ARRAY_SIZE(devkit8000_vmmc1_supply),
-	.consumer_supplies	= devkit8000_vmmc1_supply,
+	.num_consumer_supplies	= ARRAY_SIZE(ij3k_vmmc1_supply),
+	.consumer_supplies	= ij3k_vmmc1_supply,
 };
 
 /* VPLL1 for digital video outputs */
-static struct regulator_init_data devkit8000_vpll1 = {
+static struct regulator_init_data ij3k_vpll1 = {
 	.constraints = {
 		.min_uV			= 1800000,
 		.max_uV			= 1800000,
@@ -304,12 +304,12 @@ static struct regulator_init_data devkit8000_vpll1 = {
 		.valid_ops_mask		= REGULATOR_CHANGE_MODE
 					| REGULATOR_CHANGE_STATUS,
 	},
-	.num_consumer_supplies	= ARRAY_SIZE(devkit8000_vpll1_supplies),
-	.consumer_supplies	= devkit8000_vpll1_supplies,
+	.num_consumer_supplies	= ARRAY_SIZE(ij3k_vpll1_supplies),
+	.consumer_supplies	= ij3k_vpll1_supplies,
 };
 
 /* VAUX4 for ads7846 and nubs */
-static struct regulator_init_data devkit8000_vio = {
+static struct regulator_init_data ij3k_vio = {
 	.constraints = {
 		.min_uV                 = 1800000,
 		.max_uV                 = 1800000,
@@ -319,25 +319,25 @@ static struct regulator_init_data devkit8000_vio = {
 		.valid_ops_mask         = REGULATOR_CHANGE_MODE
 			| REGULATOR_CHANGE_STATUS,
 	},
-	.num_consumer_supplies  = ARRAY_SIZE(devkit8000_vio_supply),
-	.consumer_supplies      = devkit8000_vio_supply,
+	.num_consumer_supplies  = ARRAY_SIZE(ij3k_vio_supply),
+	.consumer_supplies      = ij3k_vio_supply,
 };
 
-static struct twl4030_platform_data devkit8000_twldata = {
+static struct twl4030_platform_data ij3k_twldata = {
 	/* platform_data for children goes here */
-	.gpio		= &devkit8000_gpio_data,
-	.vmmc1		= &devkit8000_vmmc1,
-	.vpll1		= &devkit8000_vpll1,
-	.vio		= &devkit8000_vio,
-	.keypad		= &devkit8000_kp_data,
+	.gpio		= &ij3k_gpio_data,
+	.vmmc1		= &ij3k_vmmc1,
+	.vpll1		= &ij3k_vpll1,
+	.vio		= &ij3k_vio,
+	/*.keypad		= &ij3k_kp_data,*/
 };
 
-static int __init devkit8000_i2c_init(void)
+static int __init ij3k_i2c_init(void)
 {
-	omap3_pmic_get_config(&devkit8000_twldata,
+	omap3_pmic_get_config(&ij3k_twldata,
 			  TWL_COMMON_PDATA_USB | TWL_COMMON_PDATA_AUDIO,
 			  TWL_COMMON_REGULATOR_VDAC);
-	omap3_pmic_init("tps65930", &devkit8000_twldata);
+	omap3_pmic_init("tps65930", &ij3k_twldata);
 	/* Bus 3 is attached to the DVI port where devices like the pico DLP
 	 * projector don't work reliably with 400kHz */
 	omap_register_i2c_bus(3, 400, NULL, 0);
@@ -555,14 +555,14 @@ static struct platform_device omap_kbd_dev = {
 	},
 };
 
-static void __init devkit8000_init_early(void)
+static void __init ij3k_init_early(void)
 {
 	omap2_init_common_infrastructure();
 	omap2_init_common_devices(mt46h32m32lf6_sdrc_params,
 				  mt46h32m32lf6_sdrc_params);
 }
 
-static void __init devkit8000_init_irq(void)
+static void __init ij3k_init_irq(void)
 {
 	omap3_init_irq();
 }
@@ -678,7 +678,7 @@ static void __init fpga_init(void)
 
 }
 
-static struct platform_device *devkit8000_devices[] __initdata = {
+static struct platform_device *ij3k_devices[] __initdata = {
 	&leds_gpio,
 //	&keys_gpio,
 	&omap_dm9000_dev,
@@ -878,7 +878,7 @@ static struct omap_board_mux board_mux[] __initdata = {
 };
 #endif
 
-static void __init devkit8000_init(void)
+static void __init ij3k_init(void)
 {
 	omap3_mux_init(board_mux, OMAP_PACKAGE_CUS);
 	omap_serial_init();
@@ -887,18 +887,18 @@ static void __init devkit8000_init(void)
 	omap_dm9000_init();
         fpga_init();
 
-	devkit8000_i2c_init();
-	platform_add_devices(devkit8000_devices,
-			ARRAY_SIZE(devkit8000_devices));
+	ij3k_i2c_init();
+	platform_add_devices(ij3k_devices,
+			ARRAY_SIZE(ij3k_devices));
 
-	omap_display_init(&devkit8000_dss_data);
+	omap_display_init(&ij3k_dss_data);
 
 	omap_ads7846_init(2, OMAP3_DEVKIT_TS_GPIO, 0, NULL);
 
 	usb_musb_init(NULL);
 	usbhs_init(&usbhs_bdata);
-	omap_nand_flash_init(NAND_BUSWIDTH_16, devkit8000_nand_partitions,
-			     ARRAY_SIZE(devkit8000_nand_partitions));
+	omap_nand_flash_init(NAND_BUSWIDTH_16, ij3k_nand_partitions,
+			     ARRAY_SIZE(ij3k_nand_partitions));
 
 	/* Ensure SDRC pins are mux'd for self-refresh */
 	omap_mux_init_signal("sdrc_cke0", OMAP_PIN_OUTPUT);
@@ -909,8 +909,8 @@ MACHINE_START(OMAP3_IJ3K, "OMAP3 IJ3K")
 	.boot_params	= 0x80000100,
 	.reserve	= omap_reserve,
 	.map_io		= omap3_map_io,
-	.init_early	= devkit8000_init_early,
-	.init_irq	= devkit8000_init_irq,
-	.init_machine	= devkit8000_init,
+	.init_early	= ij3k_init_early,
+	.init_irq	= ij3k_init_irq,
+	.init_machine	= ij3k_init,
 	.timer		= &omap3_secure_timer,
 MACHINE_END
