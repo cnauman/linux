@@ -332,6 +332,9 @@ static struct twl4030_platform_data ij3k_twldata = {
 	/*.keypad		= &ij3k_kp_data,*/
 };
 
+static struct i2c_board_info __initdata i2c_board_info = {
+        I2C_BOARD_INFO("fram24", 0x50),
+};
 static int __init ij3k_i2c_init(void)
 {
 	omap3_pmic_get_config(&ij3k_twldata,
@@ -340,7 +343,8 @@ static int __init ij3k_i2c_init(void)
 	omap3_pmic_init("tps65930", &ij3k_twldata);
 	/* Bus 3 is attached to the DVI port where devices like the pico DLP
 	 * projector don't work reliably with 400kHz */
-	omap_register_i2c_bus(3, 400, NULL, 0);
+	//omap_register_i2c_bus(3, 400, NULL, 0);
+	omap_register_i2c_bus(2, 1000, &i2c_board_info, 1);
 	return 0;
 }
 
