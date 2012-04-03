@@ -661,7 +661,7 @@ static struct platform_device omap_dm9000_dev = {
 
 static void __init omap_dm9000_init(void)
 {
-	unsigned char *eth_addr = omap_dm9000_platdata.dev_addr;
+	/*unsigned char *eth_addr = omap_dm9000_platdata.dev_addr;*/
 	struct omap_die_id odi;
 	int ret;
 
@@ -671,7 +671,7 @@ static void __init omap_dm9000_init(void)
 			OMAP_DM9000_GPIO_IRQ);
 		return;
 	}
-
+#if 0
 	/* init the mac address using DIE id */
 	omap_get_die_id(&odi);
 
@@ -681,6 +681,7 @@ static void __init omap_dm9000_init(void)
 	eth_addr[3] = (odi.id_0 & 0x00ff0000) >> 16;
 	eth_addr[4] = (odi.id_0 & 0x0000ff00) >> 8;
 	eth_addr[5] = (odi.id_0 & 0x000000ff);
+#endif
 }
 
 static struct resource omap_fpga_resources[] = {
