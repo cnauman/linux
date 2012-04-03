@@ -94,13 +94,18 @@ static struct mtd_partition ij3k_nand_partitions[] = {
 		.size		= 1 * NAND_BLOCK_SIZE,
 	},
 	{
-		.name		= "Kernel",
+		.name		= "Upgrade storage",
 		.offset		= MTDPART_OFS_APPEND,	/* Offset = 0x280000 */
+		.size		= 1 * NAND_BLOCK_SIZE,
+	},
+	{
+		.name		= "Kernel",
+		.offset		= MTDPART_OFS_APPEND,	/* Offset = 0x2a0000 */
 		.size		= 32 * NAND_BLOCK_SIZE,
 	},
 	{
 		.name		= "File System",
-		.offset		= MTDPART_OFS_APPEND,	/* Offset = 0x680000 */
+		.offset		= MTDPART_OFS_APPEND,	/* Offset = 0x6a0000 */
 		.size		= MTDPART_SIZ_FULL,
 	},
 };
