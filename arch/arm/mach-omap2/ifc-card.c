@@ -556,6 +556,7 @@ static long fpga_ioctl(struct file *filp, unsigned int num, unsigned long param)
         retval = put_user(avail, (ssize_t *)param);
         break;
     case FPGA_IRQ:
+        fpga[id].irqstate = param;
         break;
     case FPGA_CLEARBUFFER:
         fpga[id].tail = NXTNDX(fpga[id].head);
