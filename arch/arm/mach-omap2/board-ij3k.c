@@ -968,15 +968,15 @@ static struct ads7846_platform_data ads7846_config = {
 #endif
 	.debounce_max		= 10,
 #if defined(CONFIG_MACH_OMAP3_IJ3K)
-        .settle_delay_usecs     = 200,
+        .settle_delay_usecs     = 2, //200,
 //        .swap_xy		= 1,
 	.debounce_tol		= 12, //6,
-        .penirq_recheck_delay_usecs = 10,
+//        .penirq_recheck_delay_usecs = 10,
 #else
 	.debounce_tol		= 3,
 #endif
 	.debounce_rep		= 1,
-	.gpio_pendown		= -EINVAL,
+	.gpio_pendown		= OMAP3_DEVKIT_TS_GPIO, //-EINVAL,
 	.keep_vref_on		= 1,
 };
 
@@ -995,7 +995,7 @@ static void __init ij3k_init(void)
 
 	omap_display_init(&ij3k_dss_data);
 
-	omap_ads7846_init(2, OMAP3_DEVKIT_TS_GPIO, 0, NULL); //&ads7846_config);
+	omap_ads7846_init(2, OMAP3_DEVKIT_TS_GPIO, 0, /*NULL); */&ads7846_config);
 
 	usb_musb_init(&musb_board_data);
 	usbhs_init(&usbhs_bdata);
