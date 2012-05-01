@@ -232,6 +232,30 @@ static struct panel_config generic_dpi_panels[] = {
 		.power_off_delay	= 0,
 		.name			= "powertip_ph480272t",
 	},
+        /* optrex stn Panel */
+	{
+		{
+			.x_res		= 320,
+			.y_res		= 240,
+
+			.pixel_clock	= 2400,
+
+			.hfp		= 0, //15,
+			.hsw		= 0, //2,
+			.hbp		= 0, //15,
+
+			.vfp		= 0,
+			.vsw		= 0, //3,
+			.vbp		= 0,
+		},
+		.acbi			= 0x0,
+		.acb			= 0x0,
+		.config			= 0, //OMAP_DSS_LCD_TFT,
+		.power_on_delay		= 0,
+		.power_off_delay	= 0,
+		.name			= "optrex",
+	},
+
 };
 
 struct panel_drv_data {
