@@ -258,7 +258,7 @@ static void omap_led_init(void) {
 static int ij3k_twl_gpio_setup(struct device *dev,
 		unsigned gpio, unsigned ngpio)
 {
-	int ret;
+	/*int ret;*/
 
 	omap_mux_init_gpio(29, OMAP_PIN_INPUT);
 	/* gpio + 0 is "mmc0_cd" (input/IRQ) */
@@ -667,7 +667,7 @@ static struct platform_device omap_dm9000_dev = {
 static void __init omap_dm9000_init(void)
 {
 	/*unsigned char *eth_addr = omap_dm9000_platdata.dev_addr;*/
-	struct omap_die_id odi;
+	/*struct omap_die_id odi;*/
 	int ret;
 
 	ret = gpio_request_one(OMAP_DM9000_GPIO_IRQ, GPIOF_IN, "dm9000 irq");
@@ -963,22 +963,26 @@ static struct ads7846_platform_data ads7846_config = {
 	.x_max			= 0x0fff,
 	.y_max			= 0x0fff,
 	.x_plate_ohms		= 180,
-#if !defined(CONFIG_MACH_DEVKIT8000) && !defined(CONFIG_MACH_OMAP3_IJ3K)
-	.pressure_max		= 255,
-#endif
 	.debounce_max		= 10,
-#if defined(CONFIG_MACH_OMAP3_IJ3K)
         .settle_delay_usecs     = 2, //200,
 //        .swap_xy		= 1,
 	.debounce_tol		= 12, //6,
 //        .penirq_recheck_delay_usecs = 10,
-#else
-	.debounce_tol		= 3,
-#endif
 	.debounce_rep		= 1,
 	.gpio_pendown		= OMAP3_DEVKIT_TS_GPIO, //-EINVAL,
 	.keep_vref_on		= 1,
 };
+
+static int __init setup_lcd_mode(char *buf)
+{
+    	if (0 != strstr(buf, "640x480")) {
+            ads7846_config.settle_delay_usecs = 200;
+        }
+	printk("%s %s %d\n", __func__, buf, ads7846_config.settle_delay_usecs);
+	return 0;
+}
+
+early_param("omapfb.mode", setup_lcd_mode);
 
 static void __init ij3k_init(void)
 {
