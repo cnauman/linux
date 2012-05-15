@@ -386,6 +386,7 @@ static struct gpio_led gpio_leds[] = {
 		.default_trigger	= "none",
 		.gpio			= -1,
 		.active_low		= true,
+		.default_state		= LEDS_GPIO_DEFSTATE_KEEP,
 	},
 	{
 		.name			= "kb_caps",
