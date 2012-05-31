@@ -17,6 +17,8 @@
  *  it under the terms of the GNU General Public License version 2 as
  *  published by the Free Software Foundation.
  */
+//#define DEBUG
+//#define VERBOSE_DEBUG
 #include <linux/types.h>
 #include <linux/hwmon.h>
 #include <linux/init.h>
@@ -662,6 +664,8 @@ static int ads7846_debounce_filter(void *ads, int data_idx, int *val)
 			 * the whole sample, repeat it in the next sampling
 			 * period.
 			 */
+//dev_vdbg(&ts->spi->dev, "IGN x/y/abs: %d/%d/%d cnt:%d\n", 
+//        ts->last_read, *val, abs(ts->last_read - *val), ts->read_cnt);
 			ts->read_cnt = 0;
 			return ADS7846_FILTER_IGNORE;
 		}

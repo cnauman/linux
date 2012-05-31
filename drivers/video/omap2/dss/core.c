@@ -487,7 +487,7 @@ static int omap_dss_register_device(struct omap_dss_device *dssdev)
 
 	WARN_ON(!dssdev->driver_name);
 
-	reset_device(&dssdev->dev, 1);
+	reset_device(&dssdev->dev, 0);
 	dssdev->dev.bus = &dss_bus_type;
 	dssdev->dev.parent = &dss_bus;
 	dssdev->dev.release = omap_dss_dev_release;
