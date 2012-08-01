@@ -859,7 +859,7 @@ static void ads7846_report_state(struct ads7846 *ts)
 		}
 
 		input_report_abs(input, ABS_X, x);
-		input_report_abs(input, ABS_Y, y);
+		input_report_abs(input, ABS_Y, MAX_12BIT - y);
 		input_report_abs(input, ABS_PRESSURE, ts->pressure_max - Rt);
 
 		input_sync(input);
