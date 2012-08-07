@@ -974,10 +974,17 @@ static struct ads7846_platform_data ads7846_config = {
 	.keep_vref_on		= 1,
 };
 
+static int display_res = 0;
+enum { r320x240=1, r640x480, r800x480};
 static int __init setup_lcd_mode(char *buf)
 {
     	if (0 != strstr(buf, "640x480")) {
             ads7846_config.settle_delay_usecs = 200;
+            display_res = r640x480;
+        } else if (0 != strstr(buf, "320x240")) {
+            display_res = r320x240;
+        } else if (0 != strstr(buf, "800x480")) {
+            display_res = r800x480;
         }
 	printk("%s %s %d\n", __func__, buf, ads7846_config.settle_delay_usecs);
 	return 0;
@@ -988,6 +995,10 @@ early_param("omapfb.mode", setup_lcd_mode);
 static void __init ij3k_init(void)
 {
 	omap3_mux_init(board_mux, OMAP_PACKAGE_CUS);
+        if (r800x480 == display_res) {
+	    omap_mux_init_signal("dss_hsync", OMAP_MUX_MODE4 | OMAP_PIN_INPUT | OMAP_PIN_INPUT_PULLDOWN);
+	    omap_mux_init_signal("dss_vsync", OMAP_MUX_MODE4 | OMAP_PIN_INPUT | OMAP_PIN_INPUT_PULLDOWN);
+        }
 	omap_serial_init();
 
         omap_led_init();
